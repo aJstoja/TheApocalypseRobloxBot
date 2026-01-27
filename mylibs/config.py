@@ -1,4 +1,6 @@
 # This is start of orginal config python file of TheApocalypse aJs_to_ja's Bot, this comment is REQUIRED to run program bcz of checking in main.py in line ~250. DO NOT REMOVE IT 4 SAFETY!
+# VERSION 1.0.1
+# SNAPSHOT: None
 
 
 from platform import system
@@ -11,6 +13,7 @@ import os
 
 now = 1
 savepath = None
+mode: None | int = None
 
 
 # --- Funkcje pomocnicze ---
@@ -244,15 +247,24 @@ def install_dependencies():
                 print(f"Error! Dodawanie {pkg} do listy niezainstalowanych zależności programu.")
                 missing_packages.append(pkg)
 
-            if missing_packages:
+            error_times = 0
+            while missing_packages:
                 if twotimeserror:
                     print("Błąd wystąpił ponownie (?). Próba ponownej instalacji...")
 
                 print(f"Zostanie uruchomiona komenda:\n{sys.executable} -m pip install {" ".join(missing_packages)}")
-                odp = input(f"Brak bibliotek\n{missing_packages}\nZainstalować je poprzez pip? ").strip().lower()
-                while odp not in ["n", "t"]:
-                    odp = input(
-                        f"Nie rozumiem. Brak bibliotek\n{missing_packages}\nZainstalować je poprzez pip? ").strip().lower()
+                if mode != 1:
+                    odp = input(f"Brak bibliotek\n{missing_packages}\nZainstalować je poprzez pip? ").strip().lower()
+                    while odp not in ["n", "t", "y"]:
+                        odp = input(
+                            f"Nie rozumiem. Brak bibliotek\n{missing_packages}\nZainstalować je poprzez pip? ").strip().lower()
+                else:
+                    if error_times > 5:
+                        raise ConnectionError(
+                            f"Te biblioteki:\n{missing_packages}\nsą wymagane do działania skryptu. Zainstaluj je samemu lub uruchom program ponownie. (błąd internetu na 99%)")
+                    error_times += 1
+                    print(f"Automatycznie instaluję brakujące pakiety z powodu trybu 1.")
+                    odp = "t"
 
                 if odp == "n":
                     raise ImportError(
@@ -277,10 +289,7 @@ def tesseract_config(path):
         print("Pobieranie Tesseract dla Windows...")
 
         url = "https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.4.0.20240606.exe"
-        try:
-            os.mkdir(os.path.join(path, "donottouchme"))
-        except FileExistsError:
-            pass
+        os.makedirs(os.path.join(path, "donottouchme"), exist_ok=True)
 
         installer_path = os.path.join(path, "donottouchme", "tesseract_installer.exe")
         if os.path.exists(installer_path): os.remove(installer_path)
@@ -297,7 +306,7 @@ def tesseract_config(path):
                         break
                     f.write(chunk)
 
-        print("Uruchamianie iinstalatora Tesseract...")
+        print("Uruchamianie instalatora Tesseract...")
         subprocess.run([installer_path, "/S"], check=True)
 
         os.remove(installer_path)
@@ -307,8 +316,7 @@ def tesseract_config(path):
             print("Zainstalowano Tesseract w: ", tess_path)
             pytesseract.pytesseract.tesseract_cmd = os.path.join(tess_path, "tesseract.exe")
         else:
-            print("[ERROR] Instalacja Tesseract nie powiodła się.")
-            sys.exit(1)
+            raise ImportError("[ERROR] Instalacja Tesseract nie powiodła się.")
 
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
@@ -331,144 +339,187 @@ def print_status():
 
 
 def slots_config():
-    has_bottle = prompt_yes_no("Czy obecnie patrzysz się na Water Rain Collector posiadając na pasku butelkę")
+    custom_food = False
+    if mode == 4:
+        custom_food = prompt_yes_no("Tryb 4: czy chcesz ustawić swoje jedzenie (bot będzie działał dokładniej jeżeli tak, jeżeli nie to konfiguracja == tryb 3)")
 
-    bottle_slot = 0
-    if has_bottle:
-        slot_input = input("Pamiętaj o zbudowaniu ścian dookoła ciebie. Podaj slot butelki (liczba 1-9 włącznie): ")
-        while slot_input not in [str(_) for _ in range(1, 10)]:
+    if custom_food:
+        has_bottle = prompt_yes_no("Czy obecnie patrzysz się na Water Rain Collector posiadając na pasku butelkę")
+
+        bottle_slot = 0
+        if has_bottle:
             slot_input = input(
-                "Nie rozumiem. Pamiętaj o zbudowaniu ścian dookoła ciebie. Podaj slot butelki (liczba 1-9 włącznie): ")
-        bottle_slot = int(slot_input)
-        input("Jeżeli ta butelka jest pełna, wypij wodę w niej, po czym kliknij ENTER.")
+                "Pamiętaj o posiadaniu pustego slotu nr. 1 (lub czegoś nie powodującego przesunięcie (jedzenie, a nie narzędzie)). Podaj slot butelki (liczba 1-9 włącznie): ")
+            while slot_input not in [str(_) for _ in range(1, 10)]:
+                slot_input = input(
+                    "Nie rozumiem. Pamiętaj o posiadaniu pustego slotu nr. 1. Podaj slot butelki (liczba 1-9 włącznie): ")
+            bottle_slot = int(slot_input)
+            input("Jeżeli ta butelka jest pełna, wypij wodę w niej, po czym kliknij ENTER.")
 
-    slots = list(range(1, 10))
-    if bottle_slot in slots:
-        slots.remove(bottle_slot)
+        slots = list(range(1, 10))
+        if bottle_slot in slots:
+            slots.remove(bottle_slot)
 
-    food = {
-        "Chips": {"Hunger": 25, "Thirst": 0,
-                  "Keywords": ["chips", "czips", "czipsy", "chipsy", "chi", "chip", "czi", "czip"]},
-        "Blueberry": {"Hunger": 7, "Thirst": 4,
-                      "Keywords": ["blueberry", "blueberrys", "jagoda", "jagody", "jag", "blu", "blue"]},
-        "Strawberry": {"Hunger": 10, "Thirst": 5,
-                       "Keywords": ["strawberry", "strawberrys", "truskawka", "truskawki", "tru", "trus", "str", "stra",
-                                    "straw"]},
-        "Potato": {"Hunger": 15, "Thirst": 0,
-                   "Keywords": ["potato", "potatos", "potatoes", "ziemniak", "ziemniaka", "ziemniaki", "zie", "ziem",
-                                "ziemn", "pot", "pota"]},
-        "Bread": {"Hunger": 20, "Thirst": 0,
-                  "Keywords": ["bread", "breads", "chleb", "chleby", "chlebów", "hleb", "hleby", "hlebów", "chlep",
-                               "chlepy", "chlepów", "hlep", "hlepy", "hlepów", "chl", "chle", "hle", "bre", "brea"]},
-        "Artic Fruit": {"Hunger": 100, "Thirst": 100,
-                        "Keywords": ["artic fruit", "owoc arktyczny", "arktyczny owoc", "art", "fru", "owo", "ark",
-                                     "artic fruits", "arktycznych owoców"]},
-        "Cooked Beans": {"Hunger": 40, "Thirst": 15,
-                         "Keywords": ["cooked beans", "beans", "bea", "ugotowana fasolka", "ugotowane fasolki",
-                                      "fasolka", "fasoli", "fas"]},
-        "Cooked Corn": {"Hunger": 40, "Thirst": 15,
-                        "Keywords": ["cooked corn", "corn", "cor", "ugotowana kukurydza", "ugotowane kukurydze",
-                                     "kukurydza", "kukurydze", "kuk"]},
-        "Cooked Tomatoes": {"Hunger": 25, "Thirst": 50,
-                            "Keywords": ["cooked tomatoes", "tomatoes", "tom", "ugotowany pomidor",
-                                         "ugotowane pomidory", "pomidor", "pomidory", "pom"]},
-        "Coconut": {"Hunger": 10, "Thirst": 50,
-                    "Keywords": ["coconut", "coconuts", "coc", "coco", "kokos", "kokosy", "kokosów", "kok", "koko"]}
-    }
-    slots_items = [None] * 10
-
-    while slots:
-        current_slot = slots[0]
-        inp = input(f"Co masz w slocie {current_slot} (napisz `?` po więcej info)? ").strip()
-
-        if inp.lower().strip() == "?":
-            print("Musisz podać w formacie {num}x{item}, przykład: 5xStrawberry")
-            print("Jako {num} ma być ilość tego itemu w TYLKO TYM SLOCIE")
-            print("Jako {item} ma być jedzenie, `0` jeżeli pusto lub `custom`")
-            print("Dostępne: Strawberry, Blueberry, Potato, Chips...")
-            print("Do sprawdzenia wszystkich możliwych \"jedzeń\" wpisz `keywords`")
-            continue
-
-        elif inp.lower().strip() == "keywords":
-            print("Wszystkie dostępne produkty spożywcze + ich keyword-y:\n")
-            for fd in food.keys():
-                print(f"Jedzenie {fd} ma takie keywords-y: {food[fd]["Keywords"]}")
-            print("\n")
-            continue
-
-        if "x" not in inp:
-            if inp == "0":
-                slots_items[current_slot] = None
-                slots.pop(0)
-                continue
-            print("Błąd: Brak znaku 'x' w nazwie (np. 5xPotato).")
-            continue
-
-        try:
-            parts = inp.split('x', 1)
-            it_count = int(parts[0])
-            it_name = parts[1].strip()
-        except (ValueError, IndexError):
-            print("Błąd formatu. Użyj {liczba}x{nazwa}.")
-            continue
-
-        if it_name.lower() == "custom":
-            print("Podałeś `custom`. Poproszę o kilka danych.")
-            c_name = input("Podaj nazwę tego jedzenia: ")
-            c_hunger = int(input("Głód (0-100): ") or 0)
-            c_thirst = int(input("Pragnienie (0-100): ") or 0)
-
-            it_stats = {"name": c_name, "hunger": min(c_hunger, 100), "thirst": min(c_thirst, 100), "stack": it_count,
-                        "slot": slots[0]}
-
-            print(f"Czyli: {it_stats['stack']}x {it_stats['name']} (H:{it_stats['hunger']}, T:{it_stats['thirst']})?")
-            if input("T/N: ").lower() == "t":
-                slots_items[slots[0]] = it_stats
-                slots.pop(0)
-            continue
-
-        found_item = None
-        food_prop = None
-
-        # Szukanie w bazie
-        if it_name.capitalize() in food:
-            found_item = it_name.capitalize()
-            food_prop = food[found_item].copy()
-        else:
-            for f_name, f_prop in food.items():
-                if it_name.lower() in f_prop["Keywords"]:
-                    found_item = f_name
-                    food_prop = f_prop.copy()
-                    break
-
-        if found_item is None:
-            print("Nie wykryto itemu. Wpisz `?` lub użyj `{num}xcustom`.")
-            continue
-
-        if it_count > 20:
-            print(f"Ostrzeżenie: {it_count} to chyba więcej niż max stack (chyba 20)!")
-            if not prompt_yes_no("Kontynuować"):
-                continue
-
-        slots_items[current_slot] = {
-            "hunger": food_prop["Hunger"],
-            "thirst": food_prop["Thirst"],
-            "name": found_item,
-            "stack": it_count,
-            "slot": slots[0]
+        food = {
+            "Chips": {"Hunger": 25, "Thirst": 0,
+                      "Keywords": ["chips", "czips", "czipsy", "chipsy", "chi", "chip", "czi", "czip"]},
+            "Blueberry": {"Hunger": 7, "Thirst": 4,
+                          "Keywords": ["blueberry", "blueberrys", "jagoda", "jagody", "jag", "blu", "blue"]},
+            "Strawberry": {"Hunger": 10, "Thirst": 5,
+                           "Keywords": ["strawberry", "strawberrys", "truskawka", "truskawki", "tru", "trus", "str",
+                                        "stra",
+                                        "straw"]},
+            "Potato": {"Hunger": 15, "Thirst": 0,
+                       "Keywords": ["potato", "potatos", "potatoes", "ziemniak", "ziemniaka", "ziemniaki", "zie",
+                                    "ziem",
+                                    "ziemn", "pot", "pota"]},
+            "Bread": {"Hunger": 20, "Thirst": 0,
+                      "Keywords": ["bread", "breads", "chleb", "chleby", "chlebów", "hleb", "hleby", "hlebów", "chlep",
+                                   "chlepy", "chlepów", "hlep", "hlepy", "hlepów", "chl", "chle", "hle", "bre",
+                                   "brea"]},
+            "Artic Fruit": {"Hunger": 100, "Thirst": 100,
+                            "Keywords": ["artic fruit", "owoc arktyczny", "arktyczny owoc", "art", "fru", "owo", "ark",
+                                         "artic fruits", "arktycznych owoców"]},
+            "Cooked Beans": {"Hunger": 40, "Thirst": 15,
+                             "Keywords": ["cooked beans", "beans", "bea", "ugotowana fasolka", "ugotowane fasolki",
+                                          "fasolka", "fasoli", "fas"]},
+            "Cooked Corn": {"Hunger": 40, "Thirst": 15,
+                            "Keywords": ["cooked corn", "corn", "cor", "ugotowana kukurydza", "ugotowane kukurydze",
+                                         "kukurydza", "kukurydze", "kuk"]},
+            "Cooked Tomatoes": {"Hunger": 25, "Thirst": 50,
+                                "Keywords": ["cooked tomatoes", "tomatoes", "tom", "ugotowany pomidor",
+                                             "ugotowane pomidory", "pomidor", "pomidory", "pom"]},
+            "Coconut": {"Hunger": 10, "Thirst": 50,
+                        "Keywords": ["coconut", "coconuts", "coc", "coco", "kokos", "kokosy", "kokosów", "kok",
+                                     "koko"]},
+            "Cooked Potato": {"Hunger": 40, "Thirst": 0,
+                              "Keywords": ["cooked potato", "gotowany ziemniak", "gotowane ziemniaki",
+                                           "cooked potatoes"]},
         }
-        slots.pop(0)
 
-    slots_items.pop(0)
+        slots_items = [None] * 10
+
+        while slots:
+            current_slot = slots[0]
+            inp = input(f"Co masz w slocie {current_slot} (napisz `?` po więcej info)? ").strip()
+
+            if inp.lower().strip() == "?":
+                print("Musisz podać w formacie {num}x{item}, przykład: 5xStrawberry")
+                print("Jako {num} ma być ilość tego itemu w TYLKO TYM SLOCIE")
+                print("Jako {item} ma być jedzenie, `0` jeżeli pusto lub `custom`")
+                print("Dostępne: Strawberry, Blueberry, Potato, Chips...")
+                print("Do sprawdzenia wszystkich możliwych \"jedzeń\" wpisz `keywords`")
+                continue
+
+            elif inp.lower().strip() == "keywords":
+                print("Wszystkie dostępne produkty spożywcze + ich keyword-y:\n")
+                for fd in food.keys():
+                    print(f"Jedzenie {fd} ma takie keywords-y: {food[fd]["Keywords"]}")
+                print("\n")
+                continue
+
+            if "x" not in inp:
+                if inp == "0":
+                    slots_items[current_slot] = None
+                    slots.pop(0)
+                    continue
+                print("Błąd: Brak znaku 'x' w nazwie (np. 5xPotato).")
+                continue
+
+            try:
+                parts = inp.split('x', 1)
+                it_count = int(parts[0])
+                it_name = parts[1].strip()
+            except (ValueError, IndexError):
+                print("Błąd formatu. Użyj {liczba}x{nazwa}.")
+                continue
+
+            if it_name.lower() == "custom":
+                print("Podałeś `custom`. Poproszę o kilka danych.")
+                c_name = input("Podaj nazwę tego jedzenia: ")
+                c_hunger = int(input("Głód (0-100): ") or 0)
+                c_thirst = int(input("Pragnienie (0-100): ") or 0)
+
+                it_stats = {"name": c_name, "hunger": min(c_hunger, 100), "thirst": min(c_thirst, 100), "stack": it_count,
+                            "slot": slots[0]}
+
+                print(f"Czyli: {it_stats['stack']}x {it_stats['name']} (H:{it_stats['hunger']}, T:{it_stats['thirst']})?")
+                if input("T/N: ").lower() == "t":
+                    slots_items[slots[0]] = it_stats
+                    slots.pop(0)
+                continue
+
+            found_item = None
+            food_prop = None
+
+            # Szukanie w bazie
+            if it_name.capitalize() in food:
+                found_item = it_name.capitalize()
+                food_prop = food[found_item].copy()
+            else:
+                for f_name, f_prop in food.items():
+                    if it_name.lower() in f_prop["Keywords"]:
+                        found_item = f_name
+                        food_prop = f_prop.copy()
+                        break
+
+            if found_item is None:
+                print("Nie wykryto itemu. Wpisz `?` lub użyj `{num}xcustom`.")
+                continue
+
+            if it_count > 20:
+                print(f"Ostrzeżenie: {it_count} to chyba więcej niż max stack (chyba 20)!")
+                if not prompt_yes_no("Kontynuować"):
+                    continue
+
+            slots_items[current_slot] = {
+                "hunger": food_prop["Hunger"],
+                "thirst": food_prop["Thirst"],
+                "name": found_item,
+                "stack": it_count,
+                "slot": slots[0]
+            }
+            slots.pop(0)
+            slots_items.pop(0)
+    else:
+        has_bottle = True
+        print("Ponieważ masz tryb 1, 2 lub 3, MUSISZ mieć butelkę i patrzeć się na Rain Collector.")
+        while True:
+            odp = input("Podaj slot butelki: ")
+            if odp.isdigit():
+                bottle_slot = int(odp)
+                if 1 <= bottle_slot <= 9:
+                    break
+            print("Błąd: Podaj liczbę od 1 do 9.", end="\nPowtórz jeszcze raz. ")
+
+        while True:
+            print("Pominięto ustawianie slotów jedzenia (będzie mniej pytań).")
+            food_slots = [int() for _ in input("Podaj sloty jedzenia oddzielone przecinkami (np. 2,3,5): ").strip().split(", ")]
+            medicine_slots = [int(_) for _ in input("Podaj sloty medykamentów (tabletek `Medications`) oddzielone przecinkami (np. 4,6): ").strip().split(", ")]
+
+            slots_items = [food_slots, medicine_slots]
+            for i in range(1, 10):
+                fs = i in food_slots
+                ms = i in medicine_slots
+                bs = i == bottle_slot
+                if fs and ms or fs and bs or ms and bs:
+                    print(f"\nBłąd: Slot {i} jest przypisany do więcej niż jednej kategorii (jedzenie/medykamenty/butelka) (podaj sloty jeszcze raz).")
+                    continue
+            break
+
+
     return has_bottle, bottle_slot, slots_items
 
 
 # Uruchomienie sprawdzania przed startem
-def main_config(spth):
-    global savepath
+def main_config(spth, _mode):
+    global savepath, mode
 
     savepath = spth
+    mode = _mode
+
     print("Wybrano język polski bo mi się nie chciało pisać innych bo po co (:")
+    print("Tryb (o jak dużo mam się pytać, 1 to najmniej 4 to najwięcej):", mode)
     curr_os = system()
     print(f"System: {curr_os}, ", end='')
 
@@ -488,7 +539,7 @@ def main_config(spth):
 
     print("Wszystkie wymagane biblioteki: ", required_packages,
           ", potrzebujesz jeszcze " if system() == "Linux" else "",
-          "ydotool" if system() == "Linux" and os.environ.get("XDG_SESSION_TYPE", "").lower() == "wayland" else "",
+          "ydotool (bo wayland), " if system() == "Linux" and os.environ.get("XDG_SESSION_TYPE", "").lower() == "wayland" else "xdotool (bo x11), ",
           "python3-th, python3-dev oraz (opcjonalnie) wmctrl ponieważ masz linuxa (a na windowsie byłoby potrzebne jeszcze pygetwindow i pywin32)" if system() == "Linux" else "")
     system_check()
 

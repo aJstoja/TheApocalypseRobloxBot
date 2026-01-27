@@ -1,4 +1,6 @@
 # This is start of orginal interaction python file of TheApocalypse aJs_to_ja's Bot, this comment is REQUIRED to run program bcz of checking in main.py in line ~250. DO NOT REMOVE IT 4 SAFETY!
+# VERSION 1.0.1
+# SNAPSHOT: None
 
 
 import os
@@ -297,8 +299,9 @@ def _find_template(
 
 
 def check_roblox_stats(
-        screenshot_path: Path,
-        savepath: Path,
+        screenshot_path: Path | str,
+        savepath: Path | str,
+        health_bar_path: Path | str = "health_bar.png"
 ) -> Tuple[list[tuple[int, int]], Image.Image] | None:
     """
     Funkcja sprawdza zdrowie, najedzenie i napicie gracza na podstawie
@@ -311,11 +314,17 @@ def check_roblox_stats(
     :param savepath: Ścieżka do pliku health_bar.png
     :return: Lista trzech par (wartość, maksymalna wartość) i obraz lub None
     """
+    if isinstance(screenshot_path, str):
+        screenshot_path = Path(screenshot_path)
+    if isinstance(savepath, str):
+        savepath = Path(savepath)
+    if isinstance(health_bar_path, str):
+        health_bar_path = Path(health_bar_path)
 
     # 1. Przytnij obraz do obszaru poniżej health_bar-a
     pos = _find_template(
         image=screenshot_path,
-        template_path=Path(__file__).parent / savepath / "health_bar.png",
+        template_path=health_bar_path,
     )
 
     if not pos:
