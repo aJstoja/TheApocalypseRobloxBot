@@ -1,7 +1,7 @@
 experimental = False  # Ustaw na True, aby włączyć funkcje eksperymentalne (niezalecane, może powodować błędy)
 
 # NIE ZMNIENIAJ NIC PONIŻEJ TEJ LINII!
-VERSION = "1.0.1"
+VERSION = "1.1.1"
 SNAPSHOT = "None"
 
 # PONIŻEJ TEJ LINII MOŻESZ ZMIENIAĆ, ALE TYLKO JEŚLI WIESZ, CO ROBISZ I JESTEŚ TEGO PEWIEN!
@@ -171,8 +171,8 @@ else:
 
 def download_myfile(filename: str, is_image: bool = False) -> None:
     catalog_name = "nieruszajmnie"
-    download_link = f"https://raw.githubusercontent.com/aJstoja/TheApocalypseRobloxBot/main/{catalog_name}/" + filename
-    print(f"Wymagany jest plik {filename} w katalogu {catalog_name}. Pobieram {filename} z: {download_link}")
+    download_link = f"https://raw.githubusercontent.com/aJstoja/TheApocalypseRobloxBot/main/{"images" if is_image else "mylibs"}/" + filename
+    print(f"Wymagany jest plik {filename}. Pobieram {filename} z: {download_link}")
     try:
         urllib.request.urlretrieve(download_link, os.path.join(savepath, catalog_name, filename))
         print(f"Pomyślnie pobrano: {os.path.join(savepath, catalog_name, filename)}")

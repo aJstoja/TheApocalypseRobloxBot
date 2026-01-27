@@ -1,5 +1,5 @@
 # This is start of orginal mainbot python file of TheApocalypse aJs_to_ja's Bot, this comment is REQUIRED to run program bcz of checking in main.py in line ~250. DO NOT REMOVE IT 4 SAFETY!
-# VERSION 1.0.1
+# VERSION 1.1.0
 # SNAPSHOT: None
 
 from pathlib import Path

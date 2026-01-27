@@ -1,5 +1,5 @@
 # This is start of orginal config python file of TheApocalypse aJs_to_ja's Bot, this comment is REQUIRED to run program bcz of checking in main.py in line ~250. DO NOT REMOVE IT 4 SAFETY!
-# VERSION 1.0.1
+# VERSION 1.1.0
 # SNAPSHOT: None
 
 
@@ -354,7 +354,7 @@ def slots_config():
                 slot_input = input(
                     "Nie rozumiem. Pamiętaj o posiadaniu pustego slotu nr. 1. Podaj slot butelki (liczba 1-9 włącznie): ")
             bottle_slot = int(slot_input)
-            input("Jeżeli ta butelka jest pełna, wypij wodę w niej, po czym kliknij ENTER.")
+            print("Kontynuuję...")
 
         slots = list(range(1, 10))
         if bottle_slot in slots:

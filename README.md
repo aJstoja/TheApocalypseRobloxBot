@@ -1,15 +1,18 @@
 # TheApocalypseRobloxBot
 Bot do gry The Apocalypse na roblox-ie (;
 
-Jeżeli dalej to czytasz, to nie czekaj, zainstaluj i uruchom main.py (; (resztę pobierze main.py automatycznie)
+Jeżeli dalej to czytasz, to nie czekaj, zainstaluj i uruchom main.py z [tego linku](https://raw.githubusercontent.com/aJstoja/TheApocalypseRobloxBot/main/main.py) (musisz wejść i kliknąć ctrl+s; resztę pobierze automatycznie); (;
 
 
 ## Najnowsza wersja: 1.0.1 - BIG Improve (2026-01-26)
 
 
 ### UPDATE LOG:
+#### 1.1.1 - Small Bug Fixes
+ - Kilka poprawek błędów.
+ - Dodanie linku do pobrania main.py w REDME.md
 
-#### 1.0.1 - ~~Small~~ BIG Improve
+#### 1.1.0 - ~~Small~~ BIG Improve
 - Poprawa błędu zgłoszonego przez mojego tatę (katalogi — błąd przy podawaniu path-a)
 - Dodanie UPDATE LOG-a do README.md (i dodanie pierwszego wpisu)
 - Dodanie zapowiedzi nowych update-ów w przyszłości
@@ -67,7 +70,7 @@ NAJNOWSZY SNAPSHOT: None
 format:
 - plik: najnowsza wersja | najnowszy snapshot
 #### Najnowsze wersje plików:
-- main.py: 1.0.1 | None
-- mainbot.py: 1.0.1 | None
-- config.py: 1.0.1 | None
-- interaction.py: 1.0.1 | None
+- main.py: 1.1.1 | None
+- mainbot.py: 1.1.0 | None
+- config.py: 1.1.0 | None
+- interaction.py: 1.1.0 | None
