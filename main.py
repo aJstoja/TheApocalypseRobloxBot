@@ -195,6 +195,7 @@ def check_myfile(libname: str, is_image: bool = False) -> bool | None:
     def check_is_valid_mylib(libname: str) -> bool:
         if not (os.path.exists(os.path.join(savepath, "nieruszajmnie", libname)) and os.path.isfile(os.path.join(savepath, "nieruszajmnie", libname))):
             return False
+        return True
 
         file = open(os.path.join(savepath, "nierszajmnie", libname), "r").read()
 

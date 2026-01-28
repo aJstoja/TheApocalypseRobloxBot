@@ -8,6 +8,9 @@ Jeżeli dalej to czytasz, to nie czekaj, zainstaluj i uruchom main.py z [tego li
 
 
 ### UPDATE LOG:
+#### 1.1.2 - Mini-Fix
+ - We wcześniejszej wersji wystąpił błąd, który powodował błąd w pobieraniu zależności (przy ich sprawdzaniu nie użyłem „return True”, więc program nigdy nie znajdował pliku). 
+
 #### 1.1.1 - Small Bug Fixes
  - Kilka poprawek błędów.
  - Dodanie linku do pobrania main.py w REDME.md
